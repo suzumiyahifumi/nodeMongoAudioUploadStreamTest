@@ -1,3 +1,4 @@
+/*jshint esversion: 9 */
 /**
  * NPM Module dependencies.
  */
@@ -7,7 +8,7 @@ const multer = require('multer');
 
 const mongodb = require('mongodb');
 const MongoClient = require('mongodb').MongoClient;
-const ObjectID = require('mongodb').ObjectID;
+const ObjectId = require('mongodb').ObjectId;
 
 /**
  * NodeJS Module dependencies.
@@ -24,12 +25,12 @@ app.use('/tracks', trackRoute);
  * Connect Mongo Driver to MongoDB.
  */
 let db;
-MongoClient.connect('mongodb://localhost/trackDB', (err, database) => {
+MongoClient.connect('mongodb://localhost:27017', (err, database) => {
   if (err) {
     console.log('MongoDB Connection Error. Please make sure that MongoDB is running.');
     process.exit(1);
   }
-  db = database;
+  db = database.db('trackDB');
 });
 
 /**
@@ -37,7 +38,7 @@ MongoClient.connect('mongodb://localhost/trackDB', (err, database) => {
  */
 trackRoute.get('/:trackID', (req, res) => {
   try {
-    var trackID = new ObjectID(req.params.trackID);
+    var trackID = ObjectId(req.params.trackID);
   } catch(err) {
     return res.status(400).json({ message: "Invalid trackID in URL parameter. Must be a single String of 12 bytes or a string of 24 hex characters" }); 
   }
@@ -54,7 +55,7 @@ trackRoute.get('/:trackID', (req, res) => {
     res.write(chunk);
   });
 
-  downloadStream.on('error', () => {
+  downloadStream.on('error', (err) => {
     res.sendStatus(404);
   });
 
